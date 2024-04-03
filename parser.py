@@ -22,6 +22,7 @@ def read(token):
     global token_index
     if nextToken[1]==token:
         print(f"{token} read success")
+        print("Success")
         token_index+=1
         nextToken=token_list[token_index]
     else:
@@ -47,11 +48,30 @@ def E():
 
 
 def D():
-    read(D)
-def E():
-    read(E)
+    Da()
+    if nextToken[1] == "within":
+        read("within")
+        D()
+
+
+
 def Vb():
-    read(Vb)
+    if nextToken[0] == "<IDENTIFIER>":
+        read(nextToken[1])
+
+    elif nextToken[1] == "(":
+        read("(")
+
+        if nextToken[0] == "<IDENTIFIER>":
+            Vl()
+            read(")")
+        elif nextToken[0] == ")":
+            read(")")
+
+    else:
+        print("error in Vb")
+
+        
 def Ew():
     T()
     if nextToken[1] == 'where':
@@ -186,11 +206,7 @@ def Rn():
     else:
         pass
 
-def D():
-    Da()
-    if nextToken[1] == "within":
-        read("within")
-        D()
+
 
 
 def Da():
@@ -232,21 +248,7 @@ def Db():
         Vl()
         read("=")
         E()
-def Vb():
-    if nextToken[0] == "<IDENTIFIER>":
-        read(nextToken[1])
 
-    elif nextToken[1] == "(":
-        read("(")
-
-        if nextToken[0] == "<IDENTIFIER>":
-            Vl()
-            read(")")
-        elif nextToken[0] == ")":
-            read(")")
-
-    else:
-        print("error in Vb")
 def Vl():
     count = 0
     while nextToken[0] == "<IDENTIFIER>":
