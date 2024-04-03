@@ -15,6 +15,7 @@ token_list = [('<KEYWORD>', 'let'), ('<IDENTIFIER>', 'Sum'), ('<PUNCTUATION>', '
               ('<INTEGER>', '1'), ('<PUNCTUATION>', ','), ('<INTEGER>', '2'), ('<PUNCTUATION>', ','),
               ('<INTEGER>', '3'), ('<PUNCTUATION>', ','), ('<INTEGER>', '4'), ('<PUNCTUATION>', ','),
               ('<INTEGER>', '5'), ('<PUNCTUATION>', ')'), ('<PUNCTUATION>', ')')]
+
 token_list.append("END")
 nextToken = token_list[token_index]
 def read(token):
@@ -29,19 +30,21 @@ def read(token):
         print("error")
 
 def E():
-    if nextToken =='let':
-        read(nextToken)
+    if nextToken[1] == "let":
+        read("let")
         D()
-        read('in')
+        read("in")
         E()
-    elif nextToken[1]=='fn':
-        read('fn')
+    elif nextToken[1] == "fn":
+        read("fn")
         Vb()
-        while nextToken[0]=="<IDENTIFIER>" or (nextToken[0] == "<PUNCTUATION>" and nextToken[1] == "("):
+        while nextToken[0] == "<IDENTIFIER>" or (nextToken[0] == "<PUNCTUATION>" and nextToken[1] == "("):
             Vb()
         read(".")
         E()
-    else:Ew()
+    else:
+        Ew()
+
 
 
 
@@ -71,7 +74,7 @@ def Vb():
     else:
         print("error in Vb")
 
-        
+
 def Ew():
     T()
     if nextToken[1] == 'where':
@@ -183,6 +186,7 @@ def R():
     while nextToken[0] in ("<IDENTIFIER>", "<INTEGER>", "<STRING>") or nextToken[1] in (
     'true', 'false', 'nil', '(', "dummy"):
         Rn()
+        
 def Rn():
     if nextToken[1] == "true":
         read("true")
