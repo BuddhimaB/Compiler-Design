@@ -1,276 +1,322 @@
-import Lexx
-from Lexx import tokens
+from lexer import *
+import sys
 
-token_index = 0
-token_list = tokens
+def parser(token_list, entered_ast):
 
-# token_list = [('<KEYWORD>', 'let'), ('<IDENTIFIER>', 'Sum'), ('<PUNCTUATION>', '('), ('<IDENTIFIER>', 'A'),
-#               ('<PUNCTUATION>', ')'), ('<OPERATOR>', '='), ('<IDENTIFIER>', 'Psum'), ('<PUNCTUATION>', '('),
-#               ('<IDENTIFIER>', 'A'), ('<PUNCTUATION>', ','), ('<IDENTIFIER>', 'Order'), ('<IDENTIFIER>', 'A'),
-#               ('<PUNCTUATION>', ')'), ('<KEYWORD>', 'where'), ('<KEYWORD>', 'rec'), ('<IDENTIFIER>', 'Psum'),
-#               ('<PUNCTUATION>', '('), ('<IDENTIFIER>', 'T'), ('<PUNCTUATION>', ','), ('<IDENTIFIER>', 'N'),
-#               ('<PUNCTUATION>', ')'), ('<OPERATOR>', '='), ('<IDENTIFIER>', 'N'), ('<KEYWORD>', 'eq'),
-#               ('<INTEGER>', '0'), ('<OPERATOR>', '->'), ('<INTEGER>', '0'), ('<OPERATOR>', '|'),
-#               ('<IDENTIFIER>', 'Psum'), ('<PUNCTUATION>', '('), ('<IDENTIFIER>', 'T'), ('<PUNCTUATION>', ','),
-#               ('<IDENTIFIER>', 'N'), ('<OPERATOR>', '-'), ('<INTEGER>', '1'), ('<PUNCTUATION>', ')'),
-#               ('<OPERATOR>', '+'), ('<IDENTIFIER>', 'T'), ('<IDENTIFIER>', 'N'), ('<KEYWORD>', 'in'),
-#               ('<IDENTIFIER>', 'Print'), ('<PUNCTUATION>', '('), ('<IDENTIFIER>', 'Sum'), ('<PUNCTUATION>', '('),
-#               ('<INTEGER>', '1'), ('<PUNCTUATION>', ','), ('<INTEGER>', '2'), ('<PUNCTUATION>', ','),
-#               ('<INTEGER>', '3'), ('<PUNCTUATION>', ','), ('<INTEGER>', '4'), ('<PUNCTUATION>', ','),
-#               ('<INTEGER>', '5'), ('<PUNCTUATION>', ')'), ('<PUNCTUATION>', ')')]
-
-
-token_list.append("END")
-nextToken = token_list[token_index]
-def read(token):
-    global nextToken
     global token_index
-    if nextToken[1]==token:
-        print(f"{token} read success")
-        print("Success")
-        token_index+=1
-        nextToken=token_list[token_index]
-    else:
-        print("error")
+    token_index = 0
 
-def E():
-    if nextToken[1] == "let":
-        read("let")
-        D()
-        read("in")
-        E()
-    elif nextToken[1] == "fn":
-        read("fn")
-        Vb()
-        while nextToken[0] == "<IDENTIFIER>" or (nextToken[0] == "<PUNCTUATION>" and nextToken[1] == "("):
-            Vb()
-        read(".")
-        E()
-    else:
-        Ew()
+    # token_list = lexical_analyser(filename)
+    # token_list = tokens
+    token_list.append("END")
+
+    global next_token
+    next_token = token_list[token_index]
 
 
+    class Node:
+        def __init__(self, token):
+            self.token = token
+            self.children = []
 
+        def add_child(self, child):
+            self.children.insert(0, child)
 
+    ast = []
 
+    def build_tree(token, arguments):
+        new_node = Node(token)
+        for _ in range(arguments):
+            if ast:
+                new_node.children.insert(0, ast.pop())
+            else:
+                print("Stack is empty!")
+                raise ValueError("Error")
+        ast.append(new_node)
 
-def D():
-    Da()
-    if nextToken[1] == "within":
-        read("within")
-        D()
+    def print_ast(root, depth=0):
+        print("." * depth + root.token)
 
+        for child in root.children:
+            print_ast(child, depth + 1)
 
-
-def Vb():
-    if nextToken[0] == "<IDENTIFIER>":
-        read(nextToken[1])
-
-    elif nextToken[1] == "(":
-        read("(")
-
-        if nextToken[0] == "<IDENTIFIER>":
-            Vl()
-            read(")")
-        elif nextToken[0] == ")":
-            read(")")
-
-    else:
-        print("error in Vb")
-
-
-def Ew():
-    T()
-    if nextToken[1] == 'where':
-        read('where')
-        Dr()
-def T():
-    Ta()
-    while(nextToken[0] == '<PUNCTUATION>' and nextToken[1]==','):
-        read(",")
-        Ta()
-def Ta():
-    Tc()
-    while nextToken[1] == "aug":
-        read("aug")
-        Tc()
-
-
-def Tc():
-    B()
-    if nextToken[0] == "<OPERATOR>" and nextToken[1] == "->":
-        read("->")
-        Tc()
-        read("|")
-        Tc()
-def B():
-    Bt()
-    if nextToken[1] == "or":
-        read("or")
-        Bt()
-
-
-def Bt():
-    Bs()
-    if nextToken[1] == "&":
-        read("&")
-        Bt()
-def Bs():
-    if nextToken[1] == "not":
-        read("not")
-    Bp()
-
-def Bp():
-    A()
-    if nextToken[1] == "gr" or nextToken[1] == ">":
-        read(nextToken[1])
-        A()
-    elif nextToken[1] == "ge" or nextToken[1] == ">=":
-        read(nextToken[1])
-        A()
-    elif nextToken[1] == "ls" or nextToken[1] == "<":
-        read(nextToken[1])
-        A()
-    elif nextToken[1] == "le" or nextToken[1] == "<=":
-        read(nextToken[1])
-        A()
-    elif nextToken[1] == "eq":
-        read("eq")
-        A()
-    elif nextToken[1] == "ne":
-        read("ne")
-        A()
-
-def A():  # check later
-    if nextToken[1] == "+":
-        read("+")
-        At()
-    elif nextToken[1] == "-":
-        read("-")
-        At()
-    else:
-        At()
-        while nextToken[1] in ("+", "-"):
-            if nextToken[1] == "+":
-                read("+")
-                At()
-            if nextToken[1] == "-":
-                read("-")
-                At()
-def At():
-    Af()
-    while nextToken[1] in ("*", "/"):
-        if nextToken[1] == "*":
-            read("*")
-            Af()
-        if nextToken[1] == "/":
-            read("/")
-            Af()
-
-
-def Af():
-    Ap()
-    if nextToken[1] == "":
-        read("")
-        Af()
-def Ap():
-    R()
-
-    while nextToken[1] == "@":
-        read("@")
-        if nextToken[0] == "<IDENTIFIER>":
-            read(nextToken[1])
-            R()
+    def read(token):
+        global next_token, token_index
+        if next_token[1] == token:
+            # print(f"{token} read success")
+            token_index += 1
+            next_token = token_list[token_index]
         else:
-            print("Error parsing Ap")
+            print("error")
 
+    # Grammer
 
-def R():
-    Rn()
-    while nextToken[0] in ("<IDENTIFIER>", "<INTEGER>", "<STRING>") or nextToken[1] in (
-    'true', 'false', 'nil', '(', "dummy"):
-        Rn()
-        
-def Rn():
-    if nextToken[1] == "true":
-        read("true")
-
-    elif nextToken[1] == "false":
-        read("false")
-
-    elif nextToken[1] == "nil":
-        read("nil")
-
-    elif nextToken[1] == "dummy":
-        read("dummy")
-
-    elif nextToken[0] in ("<IDENTIFIER>", "<INTEGER>", "<STRING>"):
-        read(nextToken[1])
-
-    elif nextToken[1] == "(":
-        read("(")
-        E()
-        read(")")
-    else:
-        pass
-
-
-
-
-def Da():
-    Dr()
-    while nextToken[1] == "and":
-        read("and")
-        Dr()
-
-
-def Dr():
-    if nextToken[1] == "rec":
-        read("rec")
-        Db()
-
-    else:
-        Db()
-def Db():
-    if nextToken[0] == "<IDENTIFIER>":
-        read(nextToken[1])
-        if nextToken[0] == "<IDENTIFIER>" or nextToken[1] == "(":
-            Vb()
-
-        while nextToken[0] == "<IDENTIFIER>" or nextToken[1] == "(":
-            Vb()
-
-        if nextToken[1] == "=":
-            read("=")
+    def E():
+        if next_token[1] == "let":
+            read("let")
+            D()
+            read("in")
             E()
+            build_tree("let", 2)
+        elif next_token[1] == "fn":
+            read("fn")
+            Vb()
+            n = 2
+            while next_token[0] == "<IDENTIFIER>" or (next_token[0] == "<PUNCTUATION>" and next_token[1] == "("):
+                Vb()
+                n += 1
+            read(".")
+            E()
+            build_tree("lambda", n)
+        else:
+            Ew()
+
+    def Ew():
+        T()
+        if next_token[1] == "where":
+            read("where")
+            Dr()
+            build_tree("where", 2)
+
+    def T():
+        Ta()
+        if next_token[1] == ',':
+            n = 1
+            while (next_token[1] == ","):
+                read(",")
+                Ta()
+                n += 1
+            build_tree('tau', n)
+
+    def Ta():
+        Tc()
+        while next_token[1] == "aug":
+            read("aug")
+            Tc()
+            build_tree("aug", 2)
+
+    def Tc():
+        B()
+        if (next_token[1] == "->"):
+            read('->')
+            Tc()
+            read("|")
+            Tc()
+            build_tree("->", 3)
+
+    def B():
+        Bt()
+        while next_token[1] == "or":
+            read("or")
+            Bt()
+            build_tree("or", 2)
+
+    def Bt():
+        Bs()
+        while next_token[1] == "&":
+            read("&")
+            Bs()
+            build_tree("&", 2)
+
+    def Bs():
+        if next_token[1] == "not":
+            read("not")
+            Bp()
+            build_tree("not", 1)
+        else:
+            Bp()
+
+    def Bp():
+        A()
+        if next_token[1] in ["gr", ">"]:
+            read(next_token[1])
+            A()
+            build_tree("gr", 2)
+
+        elif next_token[1] in ["ge", ">="]:
+            read(next_token[1])
+            A()
+            build_tree("ge", 2)
+
+        elif next_token[1] in ["ls", "<"]:
+            read(next_token[1])
+            A()
+            build_tree("ls", 2)
+
+        elif next_token[1] in ["le", "<="]:
+            read(next_token[1])
+            A()
+            build_tree("le", 2)
+
+        elif next_token[1] in ["eq"]:
+            read(next_token[1])
+            A()
+            build_tree("eq", 2)
+
+        elif next_token[1] in ["ne"]:
+            read(next_token[1])
+            A()
+            build_tree("ne", 2)
+
+    def A():
+        if next_token[1] == "+":
+            read("+")
+            At()
+        elif next_token[1] == "-":
+            read("-")
+            At()
+            build_tree("neg", 1)
+        else:
+            At()
+            while next_token[1] in ("+", "-"):
+                temp = next_token[1]
+                read(next_token[1])
+                At()
+                build_tree(temp, 2)
+
+    def At():
+        Af()
+        while next_token[1] in ("*", "/"):
+            temp = next_token[1]
+            read(next_token[1])
+            Af()
+            build_tree(temp, 2)
+
+    def Af():
+        AP()
+        if next_token[1] == '':
+            read('')
+            Af()
+            build_tree("", 2)
+
+    def AP():
+        R()
+        while (next_token[1] == '@'):
+            read('@')
+            build_tree(next_token[1], 0)  ##check
+            read(next_token[1])
+            R()
+            build_tree("@", 3)
+
+    def R():
+        Rn()
+        while next_token[0] in ('<IDENTIFIER>', '<INTEGER>', '<STRING>') or next_token[1] in (
+                'true', 'false', 'nil', '(', 'dummy'):
+            Rn()
+            build_tree("gamma", 2)
+
+    def Rn():
+        if next_token[0] in ('<IDENTIFIER>', '<INTEGER>', '<STRING>'):
+            build_tree(next_token[1], 0)
+            read(next_token[1])
+
+        elif next_token[1] in ('true', 'false', 'nil', 'dummy'):
+            build_tree(next_token[1], 0)
+            read(next_token[1])
+
+        elif next_token[1] == '(':
+            read('(')
+            E()
+            read(')')
+
+    def D():
+        Da()
+        if next_token[1] == 'within':
+            read('within')
+            D()
+            build_tree('within', 2)
+
+    def Da():
+        Dr()
+        if (next_token[1] == 'and'):
+            read('and')
+            Dr()
+            n = 2
+            while (next_token[1] == 'and'):
+                read('and')
+                Dr()
+                n += 1
+            build_tree('and', n)
+
+    def Dr():
+        if (next_token[1] == 'rec'):
+            read('rec')
+            Db()
+            build_tree('rec', 1)
 
         else:
-            print("Error in Db")
+            Db()
 
-    elif nextToken[1] == "(":
-        read("(")
-        D()
-        read(")")
+    def Db():  # check
+        if (next_token[1] == '('):
+            read('(')
+            D()
+            read(')')
+        else:
+            build_tree(next_token[1], 0)
+            read(next_token[1])
+            if (next_token[0] == '<IDENTIFIER>' or next_token[1] == '('):
+                Vb()
+                n = 3  # check
+                while next_token[0] == '<IDENTIFIER>' or next_token[1] == '(':
+                    Vb()
+                    n += 1
+                read('=')
+                E()
+                build_tree("function_form", n)
 
-    else:
-        Vl()
-        read("=")
-        E()
+            else:
+                if next_token[1] == ',':
+                    read(',')
+                    Vl()
+                read('=')
+                E()
+                build_tree("=", 2)
 
-def Vl():
-    count = 0
-    while nextToken[0] == "<IDENTIFIER>":
-        read(nextToken[1])
-        count = count + 1
-        if nextToken[1] == ",":
-            read(",")
+    def Vb():
+        if (next_token[0] == '<IDENTIFIER>'):
+            build_tree(next_token[1], 0)
+            read(next_token[1])
+        elif next_token[1] == '(':
+            read('(')
+            if next_token[1] == ')':
+                read(')')
+                build_tree('()', 0)
+            else:
+                Vl()
+                read(')')
 
-        elif nextToken[0] == "<IDENTIFIER>":
-            print("error in Vl")
+    def Vl():
+        build_tree(next_token[1], 0)
+        read(next_token[1])
+        n = 1
+        while next_token[1] == ',':
+            read(',')
+            build_tree(next_token[1], 0)
+            read(next_token[1])
+            n += 1
+        if n > 1:
+            build_tree(',', n)
 
-    if count == 0:
-        print("error in Vl")
+    E()
+    
+    if entered_ast:
+        # print(ast)
+        print_ast(ast[0])
+        
+    return ast
 
 
-E()
-print(nextToken)
+if __name__ == "__main__":
+    # filename = input("Enter the file name: ")
+    filename = 'test.txt'
+    
+    # Read the input file
+    with open(filename, 'r') as file:
+        rpal_program = file.read()
+    
+    token_list = lexer(rpal_program)
+
+    # parser('file_name.txt')
+    ast = parser(token_list, True)
+    
