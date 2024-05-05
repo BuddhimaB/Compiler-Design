@@ -78,7 +78,8 @@ def lexer(filename):
     return matches
 
 # Example usage:
-filename = r'C:\Users\ASUS\OneDrive - University of Moratuwa\Programming Language\testing.txt'
+# filename = r'C:\Users\ASUS\OneDrive - University of Moratuwa\Programming Language\testing.txt'
+filename = r'./test.txt'
 
 tokens = lexer(filename)
 for token in tokens:
